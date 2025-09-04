@@ -47,4 +47,6 @@ class ChatBotAssistant:
 
     @staticmethod
     def tokenize_and_lemmatize(text):
-        
+        lammatizer = nltk.WordNetLemmatizer()
+        words = nltk.word_tokenize(text)
+        words = [lammatizer.lemmatize(word.lower()) for word in words]
