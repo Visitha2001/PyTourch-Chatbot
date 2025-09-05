@@ -49,7 +49,7 @@ class ChatBotAssistant:
         self.document = []
         self.vocabulary = []
         self.intents = []
-        self.intents_responses = []
+        self.intents_responses = {}
 
         self.function_mappings = function_mappings
 
@@ -78,17 +78,15 @@ class ChatBotAssistant:
             with open(self.intents_path, "r") as f:
                 intents_data = json.load(f)
 
-            intents = []
-            intents_responses = []
-            vocabulary = []
-            documents = []
-
             for intent in intents_data["intents"]:
-                if intent["tag"] not in intents:
-                    intents.append(intent["tag"])
-                    intents_responses.append(intent["tag"]) = intent["responses"]
+                if intent["tag"] not in self.intents:
+                    self.intents.append(intent["tag"])
+                    self.intents_responses.append(intent["tag"]) = intent["responses"]
                 
                 for pattern in intent["patterns"]:
                     pattern_words = self.tokenize_and_lemmatize(pattern)
-                    vocabulary.extend(pattern_words)
-                    documents.append((pattern_words, intent["tag"]))
+                    self.vocabulary.extend(pattern_words)
+                    self.documents.append((pattern_words, intent["tag"]))
+
+                self.vocabulary = sorted(set(self.vocabulary))
+
