@@ -64,5 +64,31 @@ class ChatBotAssistant:
 
         return words
 
-chatbot = ChatBotAssistant("intents.json")
-print(chatbot.tokenize_and_lemmatize("Hello world how are you, i am programming in python today."))
+# chatbot = ChatBotAssistant("intents.json")
+# print(chatbot.tokenize_and_lemmatize("Hello world how are you, i am programming in python today."))
+
+    @staticmethod
+    def bag_of_words(words, vocabulary):
+        return [1 if word in words else 0 for word in vocabulary]
+
+    def parse_intents(self):
+        lemmetizer = nltk.WordNetLemmatizer()
+
+        if os.path.exists(self.intents_path):
+            with open(self.intents_path, "r") as f:
+                intents_data = json.load(f)
+
+            intents = []
+            intents_responses = []
+            vocabulary = []
+            documents = []
+
+            for intent in intents_data["intents"]:
+                if intent["tag"] not in intents:
+                    intents.append(intent["tag"])
+                    intents_responses.append(intent["tag"]) = intent["responses"]
+                
+                for pattern in intent["patterns"]:
+                    pattern_words = self.tokenize_and_lemmatize(pattern)
+                    vocabulary.extend(pattern_words)
+                    documents.append((pattern_words, intent["tag"]))
