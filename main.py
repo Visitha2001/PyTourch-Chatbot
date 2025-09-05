@@ -11,7 +11,18 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 
-# nltk.download('punkt_tab') run once for download the package
+# download if package not exist
+def download_if_not_exists(package, path="./nltk_data"):
+    try:
+        nltk.data.find(f"corpora/{package}")
+    except LookupError:
+        nltk.download(package, download_dir=path)
+        nltk.data.path.append(path)
+
+# Ensure required packages
+download_if_not_exists("wordnet")
+download_if_not_exists("omw-1.4")
+download_if_not_exists("punkt")
 
 class ChatBotModel(nn.Module):
     def __init__(self, input_size, output_size):
@@ -50,3 +61,8 @@ class ChatBotAssistant:
         lammatizer = nltk.WordNetLemmatizer()
         words = nltk.word_tokenize(text)
         words = [lammatizer.lemmatize(word.lower()) for word in words]
+
+        return words
+
+chatbot = ChatBotAssistant("intents.json")
+print(chatbot.tokenize_and_lemmatize("Hello world how are you, i am programming in python today."))
