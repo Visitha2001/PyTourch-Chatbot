@@ -67,9 +67,8 @@ class ChatBotAssistant:
 # chatbot = ChatBotAssistant("intents.json")
 # print(chatbot.tokenize_and_lemmatize("Hello world how are you, i am programming in python today."))
 
-    @staticmethod
-    def bag_of_words(words, vocabulary):
-        return [1 if word in words else 0 for word in vocabulary]
+    def bag_of_words(self, words):
+        return [1 if word in words else 0 for word in self.vocabulary]
 
     def parse_intents(self):
         lemmetizer = nltk.WordNetLemmatizer()
@@ -86,7 +85,34 @@ class ChatBotAssistant:
                 for pattern in intent["patterns"]:
                     pattern_words = self.tokenize_and_lemmatize(pattern)
                     self.vocabulary.extend(pattern_words)
-                    self.documents.append((pattern_words, intent["tag"]))
+                    self.document.append((pattern_words, intent["tag"]))
 
                 self.vocabulary = sorted(set(self.vocabulary))
 
+    def prepare_data(self):
+        bags = []
+        indices = []
+
+        for document in self.documents:
+            words = document[0]
+            bag = self.bag_of_words(words)
+            
+            intent_index = self.intents.index(document[1])
+            bags.append(bag)
+            indices.append(intent_index)
+        
+        self.X = np.array(bags)
+        self.Y = np.array(indices)
+
+    def train_model(self, batch_size, lr, epochs):
+        X_tensor = torch.tensor(self.X, dtype=torch.float32)
+        Y_tensor = torch.tensor(self.Y, dtype=torch.long)
+
+        dataset = TensorDataset(X_tensor, Y_tensor)
+        loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+
+        self.model = ChatBotModel(self.X.shape[1], len(self.intents))
+        criterion = nn.CrossEntropyLoss()
+        optimizer = optim.Adam(self.model.parameters(), lr=lr)
+
+        for epoch in range(epochs):
