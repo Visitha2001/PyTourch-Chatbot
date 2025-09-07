@@ -80,7 +80,7 @@ class ChatBotAssistant:
             for intent in intents_data["intents"]:
                 if intent["tag"] not in self.intents:
                     self.intents.append(intent["tag"])
-                    self.intents_responses.append(intent["tag"]) = intent["responses"]
+                    self.intents_responses[intent["tag"]] = intent["responses"]
                 
                 for pattern in intent["patterns"]:
                     pattern_words = self.tokenize_and_lemmatize(pattern)
@@ -93,7 +93,7 @@ class ChatBotAssistant:
         bags = []
         indices = []
 
-        for document in self.documents:
+        for document in self.document:
             words = document[0]
             bag = self.bag_of_words(words)
             
@@ -143,7 +143,7 @@ class ChatBotAssistant:
 
     def process_message(self, input_message):
         words = self.tokenize_and_lemmatize(input_message)
-        bag = self.bag_of_words(input_message)
+        bag = self.bag_of_words(words)
 
         bag_tensor = torch.tensor([bag], dtype=torch.float32)
         self.model.eval()
@@ -161,3 +161,21 @@ class ChatBotAssistant:
             return random.choice(self.intents_responses[predicted_intent])
         else:
             return "I don't understand"
+
+def get_stocks():
+    stocks = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'FB']
+    print(random.sample(stocks, 3))
+
+if __name__ == '__main__':
+    assistant = ChatBotAssistant("intents.json", function_mappings={"stocks": get_stocks})
+    assistant.parse_intents()
+    assistant.prepare_data()
+    assistant.train_model(batch_size=8, lr=0.001, epochs=100)
+    assistant.save_model("chatbot_model.pth", "dimensions.json")
+
+    while True:
+        message = input("Enter your message: ")
+        if message.lower() == '/quit':
+            break
+        
+        print(assistant.process_message(message))
